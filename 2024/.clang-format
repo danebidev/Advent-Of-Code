@@ -1,0 +1,14 @@
+BasedOnStyle: Google
+Standard: Latest
+IndentWidth: 4
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeWhile: true
+  BeforeElse: true
+  BeforeCatch: true
+ColumnLimit: 0
+FixNamespaceComments: false
+NamespaceIndentation: All
+AccessModifierOffset: 0
+SpaceBeforeCpp11BracedList: true
+Cpp11BracedListStyle: false
