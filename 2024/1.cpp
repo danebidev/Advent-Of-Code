@@ -2,32 +2,39 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
+
+#define INPUT_SIZE 1000
 
 using namespace std;
 
-long long part1(vector<int> a, vector<int> b) {
-    sort(a.begin(), a.end());
-    sort(b.begin(), b.end());
+int part1(const vector<int>& a, const vector<int>& b) {
+    vector<int> sorted_a = a;
+    vector<int> sorted_b = b;
 
-    long long int ans = 0;
-    for (int i = 0; i < a.size(); i++) {
-        ans += abs(a[i] - b[i]);
+    sort(sorted_a.begin(), sorted_a.end());
+    sort(sorted_b.begin(), sorted_b.end());
+
+    int ans = 0;
+    const size_t size = sorted_a.size();
+    for (size_t i = 0; i < size; ++i) {
+        ans += std::abs(sorted_a[i] - sorted_b[i]);
     }
 
     return ans;
 }
 
-long long part2(vector<int> a, vector<int> b) {
-    map<int, int> m;
+int part2(const vector<int>& a, const vector<int>& b) {
+    unordered_map<int, int> freq;
+
     for (int n : b) {
-        m[n]++;
+        ++freq[n];
     }
 
-    long long int ans = 0;
+    int ans = 0;
     for (int n : a) {
-        ans += n * m[n];
+        ans += n * freq[n];
     }
 
     return ans;
@@ -35,30 +42,35 @@ long long part2(vector<int> a, vector<int> b) {
 
 int main() {
     ifstream input("input");
-    string line;
-    chrono::steady_clock::time_point begin, end;
-    long long ans;
+    if (!input) {
+        cerr << "Error opening input file" << endl;
+        return 1;
+    }
 
     vector<int> a, b;
     int n1, n2;
 
-    /*while (cin >> n1 >> n2) {*/
+    a.reserve(INPUT_SIZE);
+    b.reserve(INPUT_SIZE);
+
     while (input >> n1 >> n2) {
-        a.push_back(n1);
-        b.push_back(n2);
+        a.emplace_back(n1);
+        b.emplace_back(n2);
     }
 
-    begin = chrono::steady_clock::now();
-    ans = part1(a, b);
-    end = chrono::steady_clock::now();
-    printf("Part 1\n");
-    printf("    Answer: %lld\n", ans);
-    printf("    Time: %ld µs | %ld ns\n", chrono::duration_cast<std::chrono::microseconds>(end - begin).count(), std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+    auto benchmark = [&](auto func, const string& part_name) {
+        const auto begin = chrono::high_resolution_clock::now();
+        int ans = func(a, b);
+        const auto end = chrono::high_resolution_clock::now();
 
-    begin = chrono::steady_clock::now();
-    ans = part2(a, b);
-    end = chrono::steady_clock::now();
-    printf("\nPart 2\n");
-    printf("    Answer: %lld\n", ans);
-    printf("    Time: %ld µs | %ld ns\n", chrono::duration_cast<std::chrono::microseconds>(end - begin).count(), std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count());
+        const auto microsecs = chrono::duration_cast<chrono::microseconds>(end - begin).count();
+        const auto nanosecs = chrono::duration_cast<chrono::nanoseconds>(end - begin).count();
+
+        cout << part_name << endl;
+        cout << "    Answer: " << ans << endl;
+        cout << "    Time: " << microsecs << " µs | " << nanosecs << " ns" << endl;
+    };
+
+    benchmark(part1, "Part 1");
+    benchmark(part2, "Part 2");
 }
