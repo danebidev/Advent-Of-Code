@@ -86,7 +86,6 @@ int main() {
         b.emplace_back(n2);
     }
 
-    // Run benchmarks
     benchmark(part1, a, b, "Part 1");
     benchmark(part2, a, b, "Part 2");
 

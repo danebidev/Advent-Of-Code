@@ -1,68 +1,60 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <list>
 #include <numeric>
+#include <regex>
 #include <sstream>
 #include <vector>
 
-#define INPUT_SIZE 1000
+#define INPUT_SIZE 6
 #define WARMUP_RUNS 10
 #define BENCHMARK_RUNS 100
 
 using namespace std;
 
-bool is_safe(const list<int>& v) {
-    auto end = v.end();
-    auto prev = v.begin();
+int part1(const string& s) {
+    regex reg("mul\\(([0-9]{1,3}),([0-9]{1,3})\\)");
+    sregex_iterator begin(s.begin(), s.end(), reg);
+    sregex_iterator end;
 
-    bool incr = *next(prev) > *prev;
-    bool valid = true;
-
-    for (auto it = next(prev); it != end; it++) {
-        int p = *prev;
-        int diff = abs(*it - p);
-        if (incr != (*it > p) || diff < 1 || diff > 3) {
-            valid = false;
-            break;
-        }
-        prev = it;
-    }
-
-    return valid;
-}
-
-int part1(const vector<list<int>>& v) {
     int ans = 0;
+    smatch m;
 
-    for (const auto& cur : v) {
-        if (is_safe(cur)) ans++;
+    for (auto it = begin; it != end; ++it) {
+        m = *it;
+
+        ans += stoi(m[1]) * stoi(m[2]);
     }
 
     return ans;
 }
 
-int part2(const vector<list<int>>& v) {
-    int ans = 0;
+int part2(const string& s) {
+    regex reg("mul\\(([0-9]{1,3}),([0-9]{1,3})\\)|do\\(\\)|don't\\(\\)");
+    sregex_iterator begin(s.begin(), s.end(), reg);
+    sregex_iterator end;
 
-    for (list<int> cur : v) {
-        for (auto it = cur.begin(); it != cur.end(); ++it) {
-            int rem = *it;
-            cur.erase(it++);
-            if (is_safe(cur)) {
-                ans++;
-                break;
-            }
-            cur.insert(it, rem);
-            it--;
-        }
+    int ans = 0;
+    bool active = true;
+
+    smatch m;
+
+    for (auto it = begin; it != end; ++it) {
+        m = *it;
+
+        if (m[0] == "do()")
+            active = true;
+        else if (m[0] == "don't()")
+            active = false;
+        else if (active)
+            ans += stoi(m[1]) * stoi(m[2]);
     }
 
     return ans;
 }
 
 template <typename Func>
-void benchmark(Func func, const vector<list<int>>& v, const string& part_name) {
+void benchmark(Func func, const string& v, const string& part_name) {
     vector<long long> us_times;
     vector<long long> ns_times;
     us_times.reserve(BENCHMARK_RUNS);
@@ -93,23 +85,16 @@ void benchmark(Func func, const vector<list<int>>& v, const string& part_name) {
 int main() {
     ifstream input("input");
 
-    vector<list<int>> v;
-
-    v.reserve(INPUT_SIZE);
+    stringstream v;
     string line;
 
     while (getline(input, line)) {
-        istringstream lineStream(line);
-        list<int> a;
-
-        int n;
-        while (lineStream >> n) a.push_back(n);
-
-        v.push_back(a);
+        v << line;
     }
 
-    benchmark(part1, v, "Part 1");
-    benchmark(part2, v, "Part 2");
+    string i = v.str();
+    benchmark(part1, i, "Part 1");
+    benchmark(part2, i, "Part 2");
 
     return 0;
 }
